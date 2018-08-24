@@ -8,15 +8,19 @@ import (
 type Request struct {
 	*http.Request
 	*Client
+
+	// Err is the error when structure Request
+	Err error
 }
 
-// NewRequest return a Request extends http.Request
-func NewRequest(method, url string, body io.Reader, headers ...map[string]string) (*Request, error) {
+// NewRequest returns a Request extends http.Request using global http.client 'Session'
+func NewRequest(method, url string, body io.Reader, headers ...map[string]string) *Request {
+	return newRequest(method, url, body, Session, headers...)
+}
+
+func newRequest(method, url string, body io.Reader, client *Client, headers ...map[string]string) *Request {
 	// new http request
 	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return nil, err
-	}
 
 	// set headers
 	for _, header := range headers {
@@ -27,7 +31,12 @@ func NewRequest(method, url string, body io.Reader, headers ...map[string]string
 
 	return &Request{
 		Request: req,
-		Client:  Session,
-	}, nil
+		Client:  client,
+		Err:     err,
+	}
+}
 
+// Do will do the response.
+func (resp *Request) Do() *Response {
+	return Session.Do(resp)
 }

@@ -2,20 +2,22 @@ package test
 
 import (
 	"testing"
-	"io/ioutil"
 
+	"github.com/kr/pretty"
 	"github.com/liipx/xlib/http"
 )
 
 func TestRequest(t *testing.T) {
-	resp := http.Get("http://www.baidu.com", nil)
-	if resp.Err != nil {
-		t.Error(resp.Err)
-	} else {
-		defer resp.Body.Close()
-		_, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			t.Error(err)
-		}
+	res := make([]map[string]interface{}, 0)
+
+	err := http.Get(
+		"https://api.github.com/repos/vmg/redcarpet/issues?state=closed",
+	).JSONUnmarshal(&res)
+
+	if err != nil {
+		t.Error(err)
 	}
+
+	pretty.Println(res)
+
 }

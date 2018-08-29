@@ -3,11 +3,11 @@ package http
 import "io"
 
 func Get(url string, headers ...map[string]string) *Response {
-	return DoRequest("get", url, nil, headers...)
+	return DoRequest("GET", url, nil, headers...)
 }
 
 func Post(url string, params io.Reader, headers ...map[string]string) *Response {
-	return DoRequest("post", url, params, headers...)
+	return DoRequest("POST", url, params, headers...)
 }
 
 // DoRequest returns a Response & an error if something wrong.

@@ -1,8 +1,9 @@
 package http
 
 import (
-	"net/http"
+	"encoding/base64"
 	"io"
+	"net/http"
 )
 
 type Request struct {
@@ -13,6 +14,13 @@ type Request struct {
 	Err error
 }
 
+//
+var BaseHeader = map[string]string{
+	"User-Agent": "xlib/http v1.0",
+	"Connection": "keep-alive",
+	"Accept":     "application/json",
+}
+
 // NewRequest returns a Request extends http.Request using global http.client 'Session'
 func NewRequest(method, url string, body io.Reader, headers ...map[string]string) *Request {
 	return newRequest(method, url, body, Session, headers...)
@@ -21,6 +29,9 @@ func NewRequest(method, url string, body io.Reader, headers ...map[string]string
 func newRequest(method, url string, body io.Reader, client *Client, headers ...map[string]string) *Request {
 	// new http request
 	req, err := http.NewRequest(method, url, body)
+
+	// add base header
+	headers = append([]map[string]string{BaseHeader}, headers...)
 
 	// set headers
 	for _, header := range headers {
@@ -36,7 +47,19 @@ func newRequest(method, url string, body io.Reader, client *Client, headers ...m
 	}
 }
 
+// SetBasicAuth for request.
+func (req *Request) SetBasicAuth(userName, password string) {
+	req.Request.SetBasicAuth(userName, password)
+}
+
 // Do will do the response.
-func (resp *Request) Do() *Response {
-	return Session.Do(resp)
+func (req *Request) Do() *Response {
+	return Session.Do(req)
+}
+
+func BasicAuthHeader(userName, password string) map[string]string {
+	auth := userName + ":" + password
+	return map[string]string{
+		"Authorization": base64.StdEncoding.EncodeToString([]byte(auth)),
+	}
 }

@@ -11,6 +11,7 @@ import (
 var Session = &Client{&http.Client{}}
 
 func init() {
+	// This function always return nil error.
 	Session.Jar, _ = cookiejar.New(nil)
 }
 
@@ -62,15 +63,20 @@ func (c *Client) GetCookie(key, value string) (string, error) {
 
 // Do will do the request with this client
 func (c *Client) Do(req *Request) *Response {
-	if req.Err == nil {
-		return nil
+	resp := &Response{}
+
+	if req.Err != nil {
+		resp.Err = req.Err
+		return resp
 	}
 
-	resp, err := c.Client.Do(req.Request)
-	return &Response{
-		Response: resp,
-		Err:      err,
+	var err error
+	resp.Response, err = c.Client.Do(req.Request)
+	if err != nil {
+		resp.Err = err
 	}
+
+	return resp
 }
 
 func (c *Client) Get()    {}

@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-// Session is a global http.Client
-var Session = &Client{&http.Client{}}
+// Cli is a global http.Client
+var Cli = &Client{&http.Client{}}
 
 func init() {
 	// This function always return nil error.
-	Session.Jar, _ = cookiejar.New(nil)
+	Cli.Jar, _ = cookiejar.New(nil)
 }
 
 // ClientOptions describe the options of a Client
@@ -30,7 +30,7 @@ type Client struct {
 
 // NewClient return a Client pointer
 func NewClient(options ClientOptions) (*Client) {
-	session := &Client{
+	client := &Client{
 		Client: &http.Client{
 			Timeout:       options.Timeout,
 			Transport:     options.RoundTripper,
@@ -38,11 +38,11 @@ func NewClient(options ClientOptions) (*Client) {
 			CheckRedirect: options.CheckRedirect,
 		},
 	}
-	return session
+	return client
 }
 
 // NewRequest returns a Request extends http.Request with Client
-func (c *Client) NewRequest(method, url string, body io.Reader, headers ...map[string]string) *Request {
+func (c *Client) NewRequest(method, url string, body io.Reader, headers ...http.Header) *Request {
 	return newRequest(method, url, body, c, headers...)
 }
 
@@ -65,6 +65,11 @@ func (c *Client) GetCookie(key, value string) (string, error) {
 func (c *Client) Do(req *Request) *Response {
 	resp := &Response{}
 
+	if req == nil {
+		resp.Err = ErrorEmptyReq
+		return resp
+	}
+
 	if req.Err != nil {
 		resp.Err = req.Err
 		return resp
@@ -75,6 +80,10 @@ func (c *Client) Do(req *Request) *Response {
 	if err != nil {
 		resp.Err = err
 	}
+
+	// if debug
+	req.debug()
+	resp.debug()
 
 	return resp
 }

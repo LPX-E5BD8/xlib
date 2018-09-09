@@ -14,6 +14,15 @@ type Response struct {
 	Err error
 }
 
+func (resp *Response) debug() {
+	if !Debug {
+		return
+	}
+
+	log.Debug("Response header:", headerPretty(resp.Header))
+	log.Debug("Response body:\n", bodyPretty(resp.Body))
+}
+
 func (resp *Response) String() (string, error) {
 	if resp == nil || resp.Response == nil {
 		return "", ErrorEmptyResp

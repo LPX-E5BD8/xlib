@@ -14,29 +14,45 @@ type Request struct {
 	Err error
 }
 
-//
-var BaseHeader = map[string]string{
-	"User-Agent": "xlib/http v1.0",
-	"Connection": "keep-alive",
-	"Accept":     "application/json",
+var version = "v0.1.2"
+
+var BaseHeader = http.Header{
+	"User-Agent": []string{"xlib/http " + version},
+	"Connection": []string{"keep-alive"},
+	"Accept":     []string{"application/json"},
 }
 
-// NewRequest returns a Request extends http.Request using global http.client 'Session'
-func NewRequest(method, url string, body io.Reader, headers ...map[string]string) *Request {
-	return newRequest(method, url, body, Session, headers...)
+// NewRequest returns a Request extends http.Request using global http.client 'Cli'
+func NewRequest(method, url string, body io.Reader, headers ...http.Header) *Request {
+	return newRequest(method, url, body, Cli, headers...)
 }
 
-func newRequest(method, url string, body io.Reader, client *Client, headers ...map[string]string) *Request {
+func newRequest(method, url string, body io.Reader, client *Client, headers ...http.Header) *Request {
 	// new http request
 	req, err := http.NewRequest(method, url, body)
 
 	// add base header
-	headers = append([]map[string]string{BaseHeader}, headers...)
+	req.Header = BaseHeader
 
-	// set headers
+	// merge & add custom headers
+	headerItem := make(map[string]interface{})
 	for _, header := range headers {
 		for k, v := range header {
-			req.Header.Set(k, v)
+			for idx, item := range v {
+
+				// overwrite base header
+				if _, ok := BaseHeader[k]; ok && idx == 0 {
+					req.Header.Set(k, item)
+				} else {
+					// add item
+					if _, ok := headerItem[k+item]; !ok {
+						req.Header.Add(k, item)
+					}
+				}
+
+				// register item
+				headerItem[k+item] = true
+			}
 		}
 	}
 
@@ -54,12 +70,21 @@ func (req *Request) SetBasicAuth(userName, password string) {
 
 // Do will do the response.
 func (req *Request) Do() *Response {
-	return Session.Do(req)
+	return Cli.Do(req)
 }
 
-func BasicAuthHeader(userName, password string) map[string]string {
+func (req *Request) debug() {
+	if !Debug {
+		return
+	}
+
+	log.Debug(req.Method + ": " + req.URL.String())
+	log.Debug("Request header:", headerPretty(req.Header))
+}
+
+func BasicAuthHeader(userName, password string) http.Header {
 	auth := userName + ":" + password
-	return map[string]string{
-		"Authorization": base64.StdEncoding.EncodeToString([]byte(auth)),
+	return map[string][]string{
+		"Authorization": {"Basic " + base64.StdEncoding.EncodeToString([]byte(auth))},
 	}
 }

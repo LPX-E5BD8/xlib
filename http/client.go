@@ -29,7 +29,7 @@ type Client struct {
 }
 
 // NewClient return a Client pointer
-func NewClient(options ClientOptions) (*Client) {
+func NewClient(options *ClientOptions) (*Client) {
 	client := &Client{
 		Client: &http.Client{
 			Timeout:       options.Timeout,
@@ -88,7 +88,18 @@ func (c *Client) Do(req *Request) *Response {
 	return resp
 }
 
-func (c *Client) Get()    {}
-func (c *Client) Post()   {}
-func (c *Client) Put()    {}
-func (c *Client) Delete() {}
+func (c *Client) Get(url string, headers ...http.Header) *Response {
+	return newRequest("GET", url, nil, c, headers...).Do()
+}
+
+func (c *Client) Post(url string, params io.Reader, headers ...http.Header) *Response {
+	return newRequest("POST", url, params, c, headers...).Do()
+}
+
+func (c *Client) Put(url string, params io.Reader, headers ...http.Header) *Response {
+	return newRequest("PUT", url, params, c, headers...).Do()
+}
+
+func (c *Client) Delete(url string, params io.Reader, headers ...http.Header) *Response {
+	return newRequest("DELETE", url, params, c, headers...).Do()
+}

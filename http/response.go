@@ -15,12 +15,12 @@ type Response struct {
 }
 
 func (resp *Response) debug() {
-	if !Debug {
+	if !Debug || resp.Response == nil {
 		return
 	}
 
 	log.Debug("Response header:", headerPretty(resp.Header))
-	log.Debug("Response body:\n", bodyPretty(resp.Body))
+	log.Debug("Response body:\n", bodyPretty(resp))
 }
 
 func (resp *Response) String() (string, error) {

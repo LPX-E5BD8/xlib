@@ -1,8 +1,8 @@
 package http
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -26,15 +26,17 @@ func headerPretty(header http.Header) string {
 }
 
 // bodyPretty could string the body
-func bodyPretty(body io.ReadCloser) string {
-	if body == nil {
+func bodyPretty(resp *Response) string {
+	if resp.Response == nil || resp.Body == nil {
 		return ""
 	}
 
-	bytes, err := ioutil.ReadAll(body)
+	// ReadAll will close resp.Body
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ""
 	}
 
-	return string(bytes)
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+	return string(b)
 }

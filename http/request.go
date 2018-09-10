@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/base64"
 	"io"
 	"net/http"
 )
@@ -70,7 +69,7 @@ func (req *Request) SetBasicAuth(userName, password string) {
 
 // Do will do the response.
 func (req *Request) Do() *Response {
-	return Cli.Do(req)
+	return req.Client.Do(req)
 }
 
 func (req *Request) debug() {
@@ -80,11 +79,4 @@ func (req *Request) debug() {
 
 	log.Debug(req.Method + ": " + req.URL.String())
 	log.Debug("Request header:", headerPretty(req.Header))
-}
-
-func BasicAuthHeader(userName, password string) http.Header {
-	auth := userName + ":" + password
-	return map[string][]string{
-		"Authorization": {"Basic " + base64.StdEncoding.EncodeToString([]byte(auth))},
-	}
 }

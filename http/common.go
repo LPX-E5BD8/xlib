@@ -14,32 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package test
+package http
 
-import (
-	"fmt"
-	"testing"
-
-	"github.com/liipx/xlib/http"
+var (
+	version = "v0.2.0"
 )
-
-func TestHTTPRequest_Get(t *testing.T) {
-	res := make([]map[string]interface{}, 0)
-	err := http.Get(
-		"https://api.github.com/repos/vmg/redcarpet/issues?state=closed",
-	).JSONUnmarshal(&res)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	count := 0
-	for range res {
-		count ++
-	}
-
-	if count < 5 {
-		t.Error("keys of too few")
-		fmt.Println(res)
-	}
-}

@@ -17,29 +17,38 @@ limitations under the License.
 package test
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/liipx/xlib/http"
+	"github.com/liipx/xlib/util"
 )
 
-func TestHTTPRequest_Get(t *testing.T) {
-	res := make([]map[string]interface{}, 0)
-	err := http.Get(
-		"https://api.github.com/repos/vmg/redcarpet/issues?state=closed",
-	).JSONUnmarshal(&res)
-
-	if err != nil {
-		t.Error(err)
+func TestUtil_Crypto(t *testing.T) {
+	count := 10000
+	s := "testData"
+	randSalt := make([]string, 0)
+	for i := 0; i < count; i++ {
+		randSalt = append(randSalt, util.RandomString(16))
 	}
 
-	count := 0
-	for range res {
-		count ++
-	}
+	var err error
+	var res string
+	for _, saltStr := range randSalt {
+		salt := util.String2Bytes(saltStr)
+		res, err = util.AESEncryptCFB(s, salt)
+		if err != nil {
+			t.Error(err)
+			return
+		}
 
-	if count < 5 {
-		t.Error("keys of too few")
-		fmt.Println(res)
+		res, err = util.AESDecryptCFB(res, salt)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		if res != s {
+			t.Error("want", s, "got", res)
+			return
+		}
 	}
 }

@@ -14,32 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package test
+package util
 
-import (
-	"fmt"
-	"testing"
+import "runtime"
 
-	"github.com/liipx/xlib/http"
-)
+// Caller will return the function caller
+func Caller() string {
+	// get the callers as []uintptr
+	uintPointerList := make([]uintptr, 1)
 
-func TestHTTPRequest_Get(t *testing.T) {
-	res := make([]map[string]interface{}, 0)
-	err := http.Get(
-		"https://api.github.com/repos/vmg/redcarpet/issues?state=closed",
-	).JSONUnmarshal(&res)
-
-	if err != nil {
-		t.Error(err)
+	// skip 3 levels to get to the caller of whoever called Caller()
+	n := runtime.Callers(3, uintPointerList)
+	if n == 0 {
+		return "n/a"
 	}
 
-	count := 0
-	for range res {
-		count ++
+	// get the info of the actual function that's in the pointer
+	fun := runtime.FuncForPC(uintPointerList[0] - 1)
+	if fun == nil {
+		return "n/a"
 	}
 
-	if count < 5 {
-		t.Error("keys of too few")
-		fmt.Println(res)
-	}
+	// return caller name
+	return fun.Name()
 }

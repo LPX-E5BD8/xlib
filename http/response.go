@@ -1,3 +1,19 @@
+/*
+Copyright 2018 liipx(lipengxiang)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package http
 
 import (
@@ -5,8 +21,11 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/liipx/xlib/util"
 )
 
+// Response base on http.Response
 type Response struct {
 	*http.Response
 
@@ -23,9 +42,10 @@ func (resp *Response) debug() {
 	log.Debug("Response body:\n", bodyPretty(resp))
 }
 
+// String return response body content in string type
 func (resp *Response) String() (string, error) {
 	if resp == nil || resp.Response == nil {
-		return "", ErrorEmptyResp
+		return "", errorEmptyResp
 	}
 
 	if resp.Err != nil {
@@ -39,10 +59,10 @@ func (resp *Response) String() (string, error) {
 	}
 	defer resp.Body.Close()
 
-	return string(data), err
+	return util.Bytes2String(data), err
 }
 
-// JSON return JSONResult decode by
+// JSONUnmarshal decode response body content to v
 func (resp *Response) JSONUnmarshal(v interface{}) error {
 	if resp == nil {
 		return errors.New("empty response")
@@ -68,4 +88,5 @@ func (resp *Response) JSONUnmarshal(v interface{}) error {
 	return nil
 }
 
+// XML todo
 func (resp *Response) XML() {}

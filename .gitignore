@@ -1,4 +1,5 @@
 .idea/
+vendor
 *.log
 ### Go template
 # Binaries for programs and plugins

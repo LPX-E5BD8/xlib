@@ -17,5 +17,5 @@ limitations under the License.
 package http
 
 var (
-	version = "v0.2.0"
+	version = "v0.2.1"
 )

@@ -45,6 +45,10 @@ func NewRequest(method, url string, body io.Reader, headers ...http.Header) *Req
 func newRequest(method, url string, body io.Reader, client *Client, headers ...http.Header) *Request {
 	// new http request
 	req, err := http.NewRequest(method, url, body)
+	if err != nil || req == nil {
+		log.Error("new request got error:", err)
+		return nil
+	}
 
 	// add base header
 	req.Header = BaseHeader

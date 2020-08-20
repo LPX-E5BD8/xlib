@@ -1,4 +1,5 @@
 package http
+
 /*
 Copyright 2018 liipx(lipengxiang)
 
@@ -19,6 +20,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"time"
 )
 
@@ -44,7 +46,7 @@ type Client struct {
 }
 
 // NewClient return a Client pointer
-func NewClient(options *ClientOptions) (*Client) {
+func NewClient(options *ClientOptions) *Client {
 	client := &Client{
 		Client: &http.Client{
 			Timeout:       options.Timeout,
@@ -62,19 +64,19 @@ func (c *Client) NewRequest(method, url string, body io.Reader, headers ...http.
 }
 
 // SetCookieJar set cookies for client
-func (c *Client) SetCookieJar(jar cookiejar.Jar) (*Client) {
+func (c *Client) SetCookieJar(jar cookiejar.Jar) *Client {
 	c.Jar = &jar
 	return c
 }
 
-// SetCookie set the cookie into response
-func (c *Client) SetCookie(key, value string) (error) {
-	return nil
+// SetCookies set the cookie into response
+func (c *Client) SetCookies(u url.URL, cookies []*http.Cookie) {
+	c.Jar.SetCookies(&u, cookies)
 }
 
 // GetCookie get the cookie from client
-func (c *Client) GetCookie(key, value string) (string, error) {
-	return "", nil
+func (c *Client) GetCookies(u url.URL) []*http.Cookie {
+	return c.Jar.Cookies(&u)
 }
 
 // Do will do the request with this client
